@@ -15,6 +15,7 @@ import { Download, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Michroma } from "next/font/google";
 import { createClient } from "@supabase/supabase-js";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -106,21 +107,36 @@ export function CoverArtGenerator() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-black p-4">
       <Card className="mx-auto w-full max-w-3xl overflow-hidden bg-zinc-900">
         <div className="aspect-square relative group">
-          <img
-            src={currentImage || ""}
-            alt="Album cover art showing a black classic car"
-            className="h-full w-full object-cover"
-          />
-          <p
-            className={cn(
-              "absolute bottom-8 left-0 right-0 px-8 text-center text-xl text-black md:text-2xl lg:text-3xl tracking-wider font-bold",
-              michroma.className
-            )}
-          >
-            Ridin&apos; in my{" "}
-            <span className="text-black">{vehicleDisplay}</span> with{" "}
-            <span className="text-black">{artist}</span> in the tape deck
-          </p>
+          {isLoading ? (
+            <Skeleton className="h-full w-full" />
+          ) : (
+            <img
+              src={currentImage || ""}
+              alt="Album cover art showing a black classic car"
+              className="h-full w-full object-cover"
+            />
+          )}
+          {isLoading ? (
+            <div
+              className={cn(
+                "absolute bottom-8 left-0 right-0 px-8",
+                michroma.className
+              )}
+            >
+              <Skeleton className="h-12 mx-auto max-w-2xl" />
+            </div>
+          ) : (
+            <p
+              className={cn(
+                "absolute bottom-8 left-0 right-0 px-8 text-center text-xl text-black md:text-2xl lg:text-3xl tracking-wider font-bold",
+                michroma.className
+              )}
+            >
+              Ridin&apos; in my{" "}
+              <span className="text-black">{vehicleDisplay}</span> with{" "}
+              <span className="text-black">{artist}</span> in the tape deck
+            </p>
+          )}
           <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 touch:opacity-100">
             <div className="flex space-x-2">
               <Button
@@ -129,6 +145,7 @@ export function CoverArtGenerator() {
                 className="bg-black/50 hover:bg-black/70"
                 onClick={handleDownload}
                 aria-label="Download cover art"
+                disabled={isLoading}
               >
                 <Download className="h-5 w-5" />
               </Button>
@@ -137,6 +154,7 @@ export function CoverArtGenerator() {
                 variant="secondary"
                 className="bg-black/50 hover:bg-black/70"
                 aria-label="Share cover art"
+                disabled={isLoading}
               >
                 <Share2 className="h-5 w-5" />
               </Button>
