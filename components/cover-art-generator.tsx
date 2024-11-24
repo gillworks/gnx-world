@@ -9,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Download, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -30,96 +29,9 @@ const artists = [
   { value: "Marvin Gaye", label: "Marvin Gaye" },
 ];
 
-interface InputProps {
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  maxLength: number;
-  disabled: boolean;
-  className?: string;
-}
-
-function getTextWidth(text: string, font: string): number {
-  if (typeof window === "undefined") return 0; // Server-side check
-  const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d");
-  if (context) {
-    context.font = font;
-    const metrics = context.measureText(text);
-    return metrics.width;
-  }
-  return 0;
-}
-
-const DynamicInput: React.FC<InputProps> = ({
-  value,
-  onChange,
-  maxLength,
-  disabled,
-  className,
-}) => {
-  const inputRef = React.useRef<HTMLInputElement>(null);
-  const [width, setWidth] = React.useState(
-    value === "GNX" ? 68 : value === "Anita Baker" ? 168 : 20
-  );
-
-  const updateWidth = React.useCallback(() => {
-    if (typeof window === "undefined") return; // Server-side check
-    if (inputRef.current) {
-      const textWidth = getTextWidth(
-        value,
-        getComputedStyle(inputRef.current).font
-      );
-      setWidth(
-        value === "GNX"
-          ? 68
-          : value === "Anita Baker"
-          ? 168
-          : Math.max(20, textWidth + 4)
-      );
-    }
-  }, [value]);
-
-  React.useEffect(() => {
-    updateWidth();
-  }, [updateWidth]);
-
-  React.useEffect(() => {
-    updateWidth();
-  }, [value, updateWidth]);
-
-  return (
-    <input
-      ref={inputRef}
-      type="text"
-      value={value}
-      onChange={onChange}
-      className={cn(
-        "bg-transparent text-center focus:outline-none font-bold text-white [color:white]",
-        disabled ? "" : "border-b-2 border-white",
-        className
-      )}
-      style={{
-        width: `${width}px`,
-        minWidth: "20px",
-      }}
-      maxLength={maxLength}
-      disabled={disabled}
-    />
-  );
-};
-
 export function CoverArtGenerator() {
   const [vehicle, setVehicle] = React.useState("GNX");
   const [artist, setArtist] = React.useState("Anita Baker");
-  const [isCustomMode, setIsCustomMode] = React.useState(false);
-
-  const handleVehicleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setVehicle(e.target.value.slice(0, 32));
-  };
-
-  const handleArtistChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setArtist(e.target.value.slice(0, 40));
-  };
 
   const handleDownload = () => {
     if (typeof window === "undefined") return; // Server-side check
@@ -134,16 +46,6 @@ export function CoverArtGenerator() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-black p-4">
-      <div className="absolute top-4 right-4 flex items-center space-x-2 hidden">
-        <Switch
-          id="custom-mode"
-          checked={isCustomMode}
-          onCheckedChange={setIsCustomMode}
-        />
-        <label htmlFor="custom-mode" className="text-sm font-medium text-white">
-          Custom
-        </label>
-      </div>
       <Card className="mx-auto w-full max-w-3xl overflow-hidden bg-zinc-900">
         <div className="aspect-square relative group">
           <img
@@ -176,24 +78,9 @@ export function CoverArtGenerator() {
         <div className="flex flex-col items-center p-8">
           <p className="mb-8 text-center text-xl font-bold text-white [color:white] md:text-2xl lg:text-3xl">
             Ridin&apos; in my{" "}
-            <span className="relative inline-block text-white [color:white]">
-              <DynamicInput
-                value={vehicle}
-                onChange={handleVehicleChange}
-                maxLength={32}
-                disabled={!isCustomMode}
-              />
-            </span>{" "}
-            with{" "}
-            <span className="relative inline-block text-white [color:white]">
-              <DynamicInput
-                value={artist}
-                onChange={handleArtistChange}
-                maxLength={40}
-                disabled={!isCustomMode}
-              />
-            </span>{" "}
-            in the tape deck
+            <span className="text-white [color:white]">{vehicle}</span> with{" "}
+            <span className="text-white [color:white]">{artist}</span> in the
+            tape deck
           </p>
           <div className="flex w-full max-w-md gap-4">
             <Select value={vehicle} onValueChange={setVehicle}>
