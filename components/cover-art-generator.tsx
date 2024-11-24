@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -105,18 +106,14 @@ export function CoverArtGenerator() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={artist} onValueChange={setArtist}>
-              <SelectTrigger className="flex-1 bg-white/10 text-white">
-                <SelectValue placeholder="Select artist" />
-              </SelectTrigger>
-              <SelectContent>
-                {artists.map((a) => (
-                  <SelectItem key={a.value} value={a.value}>
-                    {a.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Input
+              type="text"
+              value={artist}
+              onChange={(e) => setArtist(e.target.value)}
+              className="flex-1 bg-white/10 text-white"
+              placeholder="Enter artist name"
+              defaultValue="Anita Baker"
+            />
           </div>
         </div>
       </Card>
