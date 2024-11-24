@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Download, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Michroma } from "next/font/google";
 
 const vehicles = [
   { value: "GNX", label: "Buick GNX" },
@@ -28,6 +29,12 @@ const artists = [
   { value: "Phyllis Hyman", label: "Phyllis Hyman" },
   { value: "Marvin Gaye", label: "Marvin Gaye" },
 ];
+
+const michroma = Michroma({
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+});
 
 export function CoverArtGenerator() {
   const [vehicle, setVehicle] = React.useState("GNX");
@@ -53,6 +60,15 @@ export function CoverArtGenerator() {
             alt="Album cover art showing a black classic car"
             className="h-full w-full object-cover"
           />
+          <p
+            className={cn(
+              "absolute bottom-8 left-0 right-0 px-8 text-center text-xl text-black md:text-2xl lg:text-3xl tracking-wider font-bold",
+              michroma.className
+            )}
+          >
+            Ridin&apos; in my <span className="text-black">{vehicle}</span> with{" "}
+            <span className="text-black">{artist}</span> in the tape deck
+          </p>
           <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 touch:opacity-100">
             <div className="flex space-x-2">
               <Button
@@ -76,12 +92,6 @@ export function CoverArtGenerator() {
           </div>
         </div>
         <div className="flex flex-col items-center p-8">
-          <p className="mb-8 text-center text-xl font-bold text-white [color:white] md:text-2xl lg:text-3xl">
-            Ridin&apos; in my{" "}
-            <span className="text-white [color:white]">{vehicle}</span> with{" "}
-            <span className="text-white [color:white]">{artist}</span> in the
-            tape deck
-          </p>
           <div className="flex w-full max-w-md gap-4">
             <Select value={vehicle} onValueChange={setVehicle}>
               <SelectTrigger className="flex-1 bg-white/10 text-white">
