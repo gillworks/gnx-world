@@ -172,8 +172,8 @@ export function CoverArtGenerator() {
             link.href = url;
             const selectedVehicle = vehicles.find((v) => v.value === vehicle);
             const filename = selectedVehicle
-              ? `${selectedVehicle.description}-GNX.jpg`
-              : "cover-art-GNX.jpg";
+              ? `GNX-${selectedVehicle.description}-${artist}.jpg`
+              : "GNX-cover-art.jpg";
             link.download = filename;
             document.body.appendChild(link);
             link.click();
