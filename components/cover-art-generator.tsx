@@ -530,7 +530,7 @@ export function CoverArtGenerator() {
         rel="noopener noreferrer"
         className="mt-4 text-zinc-600 hover:text-zinc-400 text-sm transition-colors"
       >
-        @gill_works
+        by @gill_works
       </a>
     </div>
   );
