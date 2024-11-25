@@ -10,9 +10,16 @@ AI-powered cover art generator that creates unique album covers with classic veh
   - Customizable vehicle names
   - High-quality image downloads
   - Random combination generator
+- **Social Sharing**:
+  - Twitter integration with image preview
+  - Dedicated share pages for each creation
+  - OpenGraph and Twitter Card support
+  - Temporary image storage with auto-cleanup
 - Modern UI built with Next.js 14 and Tailwind CSS
 - Responsive design with shadcn/ui components
-- Supabase integration for vehicle data management
+- Supabase integration for:
+  - Vehicle data management
+  - Temporary image storage for social sharing
 - Custom fonts with Geist Sans and Geist Mono
 - Environment-based configuration
 
@@ -42,7 +49,29 @@ NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-4. Run the development server:
+4. Set up Supabase Storage:
+
+   - Create a new bucket called 'social-shares'
+   - Configure the following storage policies for the bucket:
+
+     ```sql
+     -- Enable upload access for all users
+     CREATE POLICY "Allow public uploads"
+     ON storage.objects FOR INSERT
+     WITH CHECK (bucket_id = 'social-shares');
+
+     -- Enable read access for all users
+     CREATE POLICY "Allow public read"
+     ON storage.objects FOR SELECT
+     USING (bucket_id = 'social-shares');
+
+     -- Enable delete access for all users
+     CREATE POLICY "Allow public delete"
+     ON storage.objects FOR DELETE
+     USING (bucket_id = 'social-shares');
+     ```
+
+5. Run the development server:
 
 ```bash
 npm run dev
@@ -62,14 +91,25 @@ Located in `components/cover-art-generator.tsx`, this component allows users to:
 - Choose from legendary R&B artists
 - Customize vehicle display names
 - Generate and download unique cover art
+- Share creations directly to Twitter with image previews
 - Randomly shuffle vehicle and artist combinations
+
+### Share Page
+
+Located in `app/share/[id]/page.tsx`, this component:
+
+- Provides dedicated pages for shared creations
+- Implements OpenGraph and Twitter Card meta tags
+- Displays shared images in a responsive layout
+- Offers a link to create new artwork
+- Handles temporary image storage and cleanup
 
 ## Tech Stack
 
 - [Next.js 14](https://nextjs.org/) - React Framework
 - [Tailwind CSS](https://tailwindcss.com/) - Styling
 - [shadcn/ui](https://ui.shadcn.com/) - UI Components
-- [Supabase](https://supabase.com/) - Backend and Database
+- [Supabase](https://supabase.com/) - Backend, Database, and Storage
 - [Geist Fonts](https://vercel.com/font) - Typography
 - [Lucide Icons](https://lucide.dev/) - Icon System
 
@@ -78,6 +118,7 @@ Located in `components/cover-art-generator.tsx`, this component allows users to:
 ```
 gnx-world/
 ├── app/              # Next.js app directory and layouts
+│   └── share/       # Social sharing pages
 ├── components/       # React components
 │   ├── ui/          # shadcn/ui components
 │   └── *.tsx        # Custom components

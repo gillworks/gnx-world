@@ -17,7 +17,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Download, Share2, Check, ChevronsUpDown, Shuffle } from "lucide-react";
+import {
+  Download,
+  Twitter,
+  Check,
+  ChevronsUpDown,
+  Shuffle,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Michroma } from "next/font/google";
 import { createClient } from "@supabase/supabase-js";
@@ -175,20 +181,20 @@ export function CoverArtGenerator() {
     setVehicleDisplay(altName);
   };
 
-  const handleDownload = async () => {
-    if (typeof window === "undefined") return;
+  const generateImage = async () => {
+    if (typeof window === "undefined") return null;
 
     // Create a canvas element
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) return null;
 
     // Create a new image object
     const img = new Image();
     img.crossOrigin = "anonymous"; // Enable CORS
 
-    // Wait for image to load
-    await new Promise((resolve) => {
+    // Wait for image to load and process
+    return new Promise<string | null>((resolve) => {
       img.onload = () => {
         // Set canvas size to match image
         canvas.width = img.width;
@@ -239,31 +245,39 @@ export function CoverArtGenerator() {
           ctx.fillText(line, canvas.width / 2, startY + index * lineHeight);
         });
 
-        // Convert to blob and download
+        // Convert to blob and return the URL
         canvas.toBlob(
           (blob) => {
-            if (!blob) return;
+            if (!blob) {
+              resolve(null);
+              return;
+            }
             const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            const selectedVehicle = vehicles.find((v) => v.value === vehicle);
-            const filename = selectedVehicle
-              ? `GNX-${selectedVehicle.description}-${artist}.jpg`
-              : "GNX-cover-art.jpg";
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            resolve(url);
           },
           "image/jpeg",
           0.9
         );
-
-        resolve(null);
       };
       img.src = currentImage;
     });
+  };
+
+  const handleDownload = async () => {
+    const blobUrl = await generateImage();
+    if (!blobUrl) return;
+
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    const selectedVehicle = vehicles.find((v) => v.value === vehicle);
+    const filename = selectedVehicle
+      ? `GNX-${selectedVehicle.description}-${artist}.jpg`
+      : "GNX-cover-art.jpg";
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(blobUrl);
   };
 
   const handleShuffle = () => {
@@ -277,6 +291,77 @@ export function CoverArtGenerator() {
     const randomArtist = artists[Math.floor(Math.random() * artists.length)];
     if (randomArtist) {
       setArtist(randomArtist.value);
+    }
+  };
+
+  const handleTwitterShare = async () => {
+    const shareText = `Ridin' in my ${vehicleDisplay} with ${artist} in the tape deck`;
+    const blobUrl = await generateImage();
+    if (!blobUrl) return;
+
+    try {
+      // Get the blob from the blob URL
+      const response = await fetch(blobUrl);
+      const blob = await response.blob();
+
+      // Generate a unique filename
+      const timestamp = new Date().getTime();
+      const randomString = Math.random().toString(36).substring(2, 10);
+      const selectedVehicle = vehicles.find((v) => v.value === vehicle);
+      const safeArtistName = artist.toLowerCase().replace(/[^a-z0-9]/g, "");
+      const safeVehicleName =
+        selectedVehicle?.description.toLowerCase().replace(/[^a-z0-9]/g, "") ||
+        "unknown";
+      const filename = `share-${safeVehicleName}-${safeArtistName}-${timestamp}-${randomString}.jpg`;
+
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from("social-shares")
+        .upload(filename, blob, {
+          contentType: "image/jpeg",
+          cacheControl: "3600",
+          upsert: true,
+        });
+
+      if (error) {
+        console.error("Storage error:", error);
+        throw error;
+      }
+
+      // Get the public URL for the uploaded file
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("social-shares").getPublicUrl(filename);
+
+      // Create a share URL that includes the image ID
+      const shareBaseUrl = window.location.origin;
+      const shareUrl = `${shareBaseUrl}/share/${filename}`;
+
+      // Open Twitter share dialog with the share URL
+      window.open(
+        `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+          shareText
+        )}&url=${encodeURIComponent(shareUrl)}`,
+        "_blank"
+      );
+
+      // Clean up the blob URL
+      URL.revokeObjectURL(blobUrl);
+
+      // Schedule cleanup of the uploaded file after some time (e.g., 1 hour)
+      setTimeout(async () => {
+        await supabase.storage.from("social-shares").remove([filename]);
+      }, 3600000); // 1 hour
+    } catch (error) {
+      console.error("Error sharing to Twitter:", error);
+      // Fallback to sharing without image
+      const shareUrl = window.location.href;
+      window.open(
+        `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+          shareText
+        )}`,
+        "_blank"
+      );
     }
   };
 
@@ -338,6 +423,16 @@ export function CoverArtGenerator() {
           )}
           <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 touch:opacity-100">
             <div className="flex space-x-2">
+              <Button
+                size="sm"
+                variant="secondary"
+                className="bg-white hover:bg-white/90"
+                onClick={handleTwitterShare}
+                aria-label="Share on Twitter"
+                disabled={isLoading}
+              >
+                <Twitter className="h-5 w-5 text-black" />
+              </Button>
               <Button
                 size="sm"
                 variant="secondary"
