@@ -4,23 +4,24 @@ import * as React from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Download, Share2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Michroma } from "next/font/google";
-import { createClient } from "@supabase/supabase-js";
-import { Skeleton } from "@/components/ui/skeleton";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Download, Share2, Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Michroma } from "next/font/google";
+import { createClient } from "@supabase/supabase-js";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -59,6 +60,7 @@ export function CoverArtGenerator() {
   const [currentImage, setCurrentImage] = React.useState<string>("");
   const [isLoading, setIsLoading] = React.useState(true);
   const [altNames, setAltNames] = React.useState<string[]>([]);
+  const [open, setOpen] = React.useState(false);
 
   React.useEffect(() => {
     async function fetchVehicles() {
@@ -295,24 +297,49 @@ export function CoverArtGenerator() {
         </div>
         <div className="flex flex-col items-center p-8">
           <div className="flex w-full max-w-md gap-4">
-            <Select
-              value={vehicle}
-              onValueChange={handleVehicleChange}
-              disabled={isLoading}
-            >
-              <SelectTrigger className="flex-1 bg-white/10 text-white">
-                <SelectValue
-                  placeholder={isLoading ? "Loading..." : "Select vehicle"}
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {vehicles.map((v) => (
-                  <SelectItem key={v.value} value={v.value}>
-                    {v.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="flex-1 bg-white/10 text-white justify-between"
+                  disabled={isLoading}
+                >
+                  {vehicle
+                    ? vehicles.find((v) => v.value === vehicle)?.label
+                    : "Select vehicle..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[300px] p-0">
+                <Command>
+                  <CommandInput placeholder="Search vehicles..." />
+                  <CommandList>
+                    <CommandEmpty>No vehicle found.</CommandEmpty>
+                    <CommandGroup>
+                      {vehicles.map((v) => (
+                        <CommandItem
+                          key={v.value}
+                          onSelect={() => {
+                            handleVehicleChange(v.value);
+                            setOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              vehicle === v.value ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {v.label}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
             <Input
               type="text"
               value={artist}
