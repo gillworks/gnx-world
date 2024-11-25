@@ -16,6 +16,11 @@ import { cn } from "@/lib/utils";
 import { Michroma } from "next/font/google";
 import { createClient } from "@supabase/supabase-js";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -46,18 +51,23 @@ export function CoverArtGenerator() {
       label: string;
       image_url: string;
       alt_name_1: string;
+      alt_name_2: string;
+      alt_name_3: string;
       description: string;
     }[]
   >([]);
   const [currentImage, setCurrentImage] = React.useState<string>("");
   const [isLoading, setIsLoading] = React.useState(true);
+  const [altNames, setAltNames] = React.useState<string[]>([]);
 
   React.useEffect(() => {
     async function fetchVehicles() {
       try {
         const { data, error } = await supabase
           .from("vehicles")
-          .select("id, display_name, image_url, alt_name_1, description")
+          .select(
+            "id, display_name, image_url, alt_name_1, alt_name_2, alt_name_3, description"
+          )
           .order("display_name");
 
         if (error) throw error;
@@ -67,6 +77,8 @@ export function CoverArtGenerator() {
           label: vehicle.display_name,
           image_url: vehicle.image_url,
           alt_name_1: vehicle.alt_name_1,
+          alt_name_2: vehicle.alt_name_2,
+          alt_name_3: vehicle.alt_name_3,
           description: vehicle.description,
         }));
 
@@ -78,6 +90,14 @@ export function CoverArtGenerator() {
           setVehicle(firstVehicle.value);
           setVehicleDisplay(firstVehicle.alt_name_1);
           setCurrentImage(firstVehicle.image_url);
+          // Set alt names for the first vehicle
+          setAltNames(
+            [
+              firstVehicle.alt_name_1,
+              firstVehicle.alt_name_2,
+              firstVehicle.alt_name_3,
+            ].filter(Boolean)
+          );
         }
       } catch (error) {
         console.error("Error fetching vehicles:", error);
@@ -96,7 +116,19 @@ export function CoverArtGenerator() {
       setVehicle(value);
       setVehicleDisplay(selectedVehicle.alt_name_1);
       setCurrentImage(selectedVehicle.image_url);
+      // Create array of alt names, filtering out any empty values
+      setAltNames(
+        [
+          selectedVehicle.alt_name_1,
+          selectedVehicle.alt_name_2,
+          selectedVehicle.alt_name_3,
+        ].filter(Boolean)
+      );
     }
+  };
+
+  const handleAltNameSelect = (altName: string) => {
+    setVehicleDisplay(altName);
   };
 
   const handleDownload = async () => {
@@ -220,8 +252,30 @@ export function CoverArtGenerator() {
               )}
             >
               Ridin&apos; in my{" "}
-              <span className="text-black">{vehicleDisplay}</span> with{" "}
-              <span className="text-black">{artist}</span> in the tape deck
+              <Popover>
+                <PopoverTrigger asChild>
+                  <span className="text-black cursor-pointer hover:underline">
+                    {vehicleDisplay}
+                  </span>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-2">
+                  <div className="flex flex-col gap-2">
+                    {altNames.map((name, index) => (
+                      <Button
+                        key={index}
+                        variant={
+                          name === vehicleDisplay ? "secondary" : "ghost"
+                        }
+                        className="justify-start"
+                        onClick={() => handleAltNameSelect(name)}
+                      >
+                        {name}
+                      </Button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>{" "}
+              with <span className="text-black">{artist}</span> in the tape deck
             </p>
           )}
           <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 touch:opacity-100">
