@@ -236,15 +236,6 @@ export function CoverArtGenerator() {
               >
                 <Download className="h-5 w-5 text-black" />
               </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                className="bg-white hover:bg-white/90"
-                aria-label="Share cover art"
-                disabled={isLoading}
-              >
-                <Share2 className="h-5 w-5 text-black" />
-              </Button>
             </div>
           </div>
         </div>
