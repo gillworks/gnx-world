@@ -324,6 +324,14 @@ export function CoverArtGenerator() {
           </div>
         </div>
       </Card>
+      <a
+        href="https://x.com/gill_works"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-4 text-zinc-600 hover:text-zinc-400 text-sm transition-colors"
+      >
+        @gill_works
+      </a>
     </div>
   );
 }
