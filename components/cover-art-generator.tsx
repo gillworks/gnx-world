@@ -153,7 +153,7 @@ export function CoverArtGenerator() {
 
         // Add text with wrapping
         const text = `Ridin' in my ${vehicleDisplay} with ${artist} in the tape deck`;
-        const maxWidth = canvas.width * 0.8; // 80% of canvas width for padding
+        const maxWidth = canvas.width * 0.9; // 90% of canvas width for padding
         const lines = wrapText(ctx, text, maxWidth);
 
         const lineHeight = fontSize * 1.5;
