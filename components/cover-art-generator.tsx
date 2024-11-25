@@ -142,21 +142,21 @@ export function CoverArtGenerator() {
               <Button
                 size="sm"
                 variant="secondary"
-                className="bg-black/50 hover:bg-black/70"
+                className="bg-white hover:bg-white/90"
                 onClick={handleDownload}
                 aria-label="Download cover art"
                 disabled={isLoading}
               >
-                <Download className="h-5 w-5" />
+                <Download className="h-5 w-5 text-black" />
               </Button>
               <Button
                 size="sm"
                 variant="secondary"
-                className="bg-black/50 hover:bg-black/70"
+                className="bg-white hover:bg-white/90"
                 aria-label="Share cover art"
                 disabled={isLoading}
               >
-                <Share2 className="h-5 w-5" />
+                <Share2 className="h-5 w-5 text-black" />
               </Button>
             </div>
           </div>
