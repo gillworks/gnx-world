@@ -41,7 +41,13 @@ export function CoverArtGenerator() {
   const [vehicleDisplay, setVehicleDisplay] = React.useState<string>("");
   const [artist, setArtist] = React.useState("Anita Baker");
   const [vehicles, setVehicles] = React.useState<
-    { value: string; label: string; image_url: string; alt_name_1: string }[]
+    {
+      value: string;
+      label: string;
+      image_url: string;
+      alt_name_1: string;
+      description: string;
+    }[]
   >([]);
   const [currentImage, setCurrentImage] = React.useState<string>("");
   const [isLoading, setIsLoading] = React.useState(true);
@@ -51,7 +57,7 @@ export function CoverArtGenerator() {
       try {
         const { data, error } = await supabase
           .from("vehicles")
-          .select("id, display_name, image_url, alt_name_1")
+          .select("id, display_name, image_url, alt_name_1, description")
           .order("display_name");
 
         if (error) throw error;
@@ -61,6 +67,7 @@ export function CoverArtGenerator() {
           label: vehicle.display_name,
           image_url: vehicle.image_url,
           alt_name_1: vehicle.alt_name_1,
+          description: vehicle.description,
         }));
 
         setVehicles(formattedVehicles);
@@ -92,15 +99,95 @@ export function CoverArtGenerator() {
     }
   };
 
-  const handleDownload = () => {
-    if (typeof window === "undefined") return; // Server-side check
-    const link = document.createElement("a");
-    link.href =
-      "https://replicate.delivery/xezq/nu6sPqSoe2xXIauj8Ldu1A67xqfBeTvYkoQQhxDj5SjehURPB/out-0.jpg";
-    link.download = "cover-art.jpg";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    if (typeof window === "undefined") return;
+
+    // Create a canvas element
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Create a new image object
+    const img = new Image();
+    img.crossOrigin = "anonymous"; // Enable CORS
+
+    // Wait for image to load
+    await new Promise((resolve) => {
+      img.onload = () => {
+        // Set canvas size to match image
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        // Draw image
+        ctx.drawImage(img, 0, 0);
+
+        // Configure text style
+        const fontSize = img.width * 0.04;
+        ctx.font = `bold ${fontSize}px ${michroma.style.fontFamily}`;
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+
+        // Function to wrap text
+        function wrapText(
+          context: CanvasRenderingContext2D,
+          text: string,
+          maxWidth: number
+        ) {
+          const words = text.split(" ");
+          const lines = [];
+          let currentLine = words[0];
+
+          for (let i = 1; i < words.length; i++) {
+            const word = words[i];
+            const width = context.measureText(currentLine + " " + word).width;
+            if (width < maxWidth) {
+              currentLine += " " + word;
+            } else {
+              lines.push(currentLine);
+              currentLine = word;
+            }
+          }
+          lines.push(currentLine);
+          return lines;
+        }
+
+        // Add text with wrapping
+        const text = `Ridin' in my ${vehicleDisplay} with ${artist} in the tape deck`;
+        const maxWidth = canvas.width * 0.8; // 80% of canvas width for padding
+        const lines = wrapText(ctx, text, maxWidth);
+
+        const lineHeight = fontSize * 1.5;
+        const startY = canvas.height - lineHeight * (lines.length + 1);
+
+        lines.forEach((line, index) => {
+          ctx.fillText(line, canvas.width / 2, startY + index * lineHeight);
+        });
+
+        // Convert to blob and download
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return;
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            const selectedVehicle = vehicles.find((v) => v.value === vehicle);
+            const filename = selectedVehicle
+              ? `${selectedVehicle.description}-GNX.jpg`
+              : "cover-art-GNX.jpg";
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+          },
+          "image/jpeg",
+          0.9
+        );
+
+        resolve(null);
+      };
+      img.src = currentImage;
+    });
   };
 
   return (
