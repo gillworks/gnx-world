@@ -68,7 +68,7 @@ export function CoverArtGenerator() {
           .select(
             "id, display_name, image_url, alt_name_1, alt_name_2, alt_name_3, description"
           )
-          .order("display_name");
+          .order("priority", { ascending: true });
 
         if (error) throw error;
 
