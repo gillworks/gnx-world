@@ -17,7 +17,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Download, Share2, Check, ChevronsUpDown } from "lucide-react";
+import { Download, Share2, Check, ChevronsUpDown, Shuffle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Michroma } from "next/font/google";
 import { createClient } from "@supabase/supabase-js";
@@ -224,6 +224,20 @@ export function CoverArtGenerator() {
     });
   };
 
+  const handleShuffle = () => {
+    // Randomly select a vehicle
+    const randomVehicle = vehicles[Math.floor(Math.random() * vehicles.length)];
+    if (randomVehicle) {
+      handleVehicleChange(randomVehicle.value);
+    }
+
+    // Randomly select an artist
+    const randomArtist = artists[Math.floor(Math.random() * artists.length)];
+    if (randomArtist) {
+      setArtist(randomArtist.value);
+    }
+  };
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-black p-4">
       <Card className="mx-auto w-full max-w-3xl overflow-hidden bg-zinc-900">
@@ -348,6 +362,16 @@ export function CoverArtGenerator() {
               placeholder="Enter artist name"
               defaultValue="Anita Baker"
             />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleShuffle}
+              className="bg-white/10 text-white"
+              disabled={isLoading}
+              title="Shuffle vehicle and artist"
+            >
+              <Shuffle className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </Card>
