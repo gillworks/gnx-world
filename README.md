@@ -1,3 +1,5 @@
+![GNX World Preview](/public/preview.jpg)
+
 # GNX World
 
 AI-powered cover art generator that creates unique album covers with classic vehicles and legendary artists, inspired by Kendrick Lamar's "GNX".
