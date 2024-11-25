@@ -23,6 +23,7 @@ import {
   Check,
   ChevronsUpDown,
   Shuffle,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Michroma } from "next/font/google";
@@ -109,6 +110,7 @@ export function CoverArtGenerator() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [altNames, setAltNames] = React.useState<string[]>([]);
   const [open, setOpen] = React.useState(false);
+  const [isTwitterSharing, setIsTwitterSharing] = React.useState(false);
 
   React.useEffect(() => {
     async function fetchVehicles() {
@@ -295,9 +297,13 @@ export function CoverArtGenerator() {
   };
 
   const handleTwitterShare = async () => {
+    setIsTwitterSharing(true);
     const shareText = `Ridin' in my ${vehicleDisplay} with ${artist} in the tape deck`;
     const blobUrl = await generateImage();
-    if (!blobUrl) return;
+    if (!blobUrl) {
+      setIsTwitterSharing(false);
+      return;
+    }
 
     try {
       // Get the blob from the blob URL
@@ -362,6 +368,8 @@ export function CoverArtGenerator() {
         )}`,
         "_blank"
       );
+    } finally {
+      setIsTwitterSharing(false);
     }
   };
 
@@ -429,9 +437,13 @@ export function CoverArtGenerator() {
                 className="bg-white hover:bg-white/90"
                 onClick={handleTwitterShare}
                 aria-label="Share on Twitter"
-                disabled={isLoading}
+                disabled={isLoading || isTwitterSharing}
               >
-                <Twitter className="h-5 w-5 text-black" />
+                {isTwitterSharing ? (
+                  <Loader2 className="h-5 w-5 text-black animate-spin" />
+                ) : (
+                  <Twitter className="h-5 w-5 text-black" />
+                )}
               </Button>
               <Button
                 size="sm"
